@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, createTask, createNGO, getNGOs, matchTask, assignTask, getNGODashboard, predictPriority } from '../services/api';
-import { FiPlus, FiUsers, FiTarget, FiTrendingUp, FiCheck, FiZap, FiMapPin, FiClock, FiX, FiCpu } from 'react-icons/fi';
+import { FiPlus, FiUsers, FiTarget, FiTrendingUp, FiCheck, FiZap, FiMapPin, FiClock, FiX, FiCpu, FiGrid, FiActivity } from 'react-icons/fi';
 
 const SKILL_OPTIONS = ['medical', 'teaching', 'logistics', 'cooking', 'counseling', 'driving', 'construction', 'tech', 'translation', 'first-aid'];
 
@@ -99,7 +99,6 @@ const NGODashboard = () => {
       const predicted = res.data.predictedUrgency;
       if (predicted) {
         setTaskForm({ ...taskForm, urgency: predicted });
-        alert(`AI detected urgency as: ${predicted.toUpperCase()} (Confidence: ${res.data.confidence * 100}%)`);
       }
     } catch (err) {
       console.error(err);
@@ -129,56 +128,60 @@ const NGODashboard = () => {
   };
 
   const urgencyConfig = {
-    low: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-    medium: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30' },
-    high: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30' },
-    critical: { bg: 'bg-rose-500/20 text-rose-400 border-rose-500/30 animate-pulse ring-2 ring-rose-500/20' }
+    low: { color: '#34d399', bg: 'rgba(52,211,153,0.1)' },
+    medium: { color: '#fbbf24', bg: 'rgba(251,191,36,0.1)' },
+    high: { color: '#f87171', bg: 'rgba(248,113,113,0.1)', shadow: '0 0 10px rgba(248,113,113,0.4)' },
+    critical: { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', shadow: '0 0 20px rgba(239,68,68,0.6)', pulse: true }
   };
 
   if (loading) return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-950 flex flex-col items-center justify-center">
-      <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
-      <p className="text-slate-400 font-medium">Authenticating credentials...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center font-sans tracking-wide" style={{ background: 'transparent' }}>
+      <div className="w-16 h-16 border-4 rounded-full animate-spin mb-6" style={{ borderColor: 'rgba(239,68,68,0.2)', borderTopColor: '#ef4444' }}></div>
+      <p style={{ color: '#fca5a5' }} className="font-bold uppercase tracking-widest text-sm">Authenticating Command Node...</p>
     </div>
   );
 
-  // NGO Creation Form
+  // NGO Creation Form (First time login)
   if (showCreateNGO) {
     return (
-      <div className="min-h-[calc(100vh-64px)] bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]"></div>
-        <div className="w-full max-w-lg bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10 animate-slide-up">
-          <h2 className="text-3xl font-extrabold mb-8 text-white">Create Your NGO Hub</h2>
-          <form onSubmit={handleCreateNGO} className="space-y-5">
+      <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-sans" style={{ background: 'transparent' }}>
+        <div className="w-full max-w-lg backdrop-blur-3xl rounded-3xl p-10 shadow-2xl relative z-10 animate-slide-up" style={{ background: 'rgba(10,5,5,0.7)', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <h2 className="text-3xl font-extrabold mb-8 text-white tracking-tight">Initialize Base Hub</h2>
+          <form onSubmit={handleCreateNGO} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-slate-400 mb-2">Organization Name</label>
-              <input className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-medium" 
+              <label className="block text-xs font-bold mb-2 uppercase tracking-widest" style={{ color: '#fca5a5' }}>Organization Designation</label>
+              <input className="w-full rounded-xl px-4 py-4 text-white focus:outline-none transition-all font-medium" 
+                style={{ background: 'rgba(20,5,5,0.6)', border: '1px solid rgba(239,68,68,0.3)' }}
                 value={ngoForm.name} onChange={(e) => setNgoForm({ ...ngoForm, name: e.target.value })} required placeholder="E.g. Red Cross Society" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-400 mb-2">Mission Statement</label>
-              <textarea className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none font-medium" 
-                rows={3} value={ngoForm.description} onChange={(e) => setNgoForm({ ...ngoForm, description: e.target.value })} required placeholder="Describe your NGO's primary focus..." />
+              <label className="block text-xs font-bold mb-2 uppercase tracking-widest" style={{ color: '#fca5a5' }}>Core Directive</label>
+              <textarea className="w-full rounded-xl px-4 py-4 text-white focus:outline-none transition-all resize-none font-medium" 
+                style={{ background: 'rgba(20,5,5,0.6)', border: '1px solid rgba(239,68,68,0.3)' }}
+                rows={3} value={ngoForm.description} onChange={(e) => setNgoForm({ ...ngoForm, description: e.target.value })} required placeholder="Describe operational focus..." />
             </div>
             <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-bold text-slate-400 mb-2">Sector</label>
-                <select className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-all font-medium appearance-none" 
+                <label className="block text-xs font-bold mb-2 uppercase tracking-widest" style={{ color: '#fca5a5' }}>Sector</label>
+                <select className="w-full rounded-xl px-4 py-4 text-white focus:outline-none transition-all font-medium appearance-none" 
+                  style={{ background: 'rgba(20,5,5,0.6)', border: '1px solid rgba(239,68,68,0.3)' }}
                   value={ngoForm.category} onChange={(e) => setNgoForm({ ...ngoForm, category: e.target.value })}>
                   {['education', 'healthcare', 'disaster-relief', 'environment', 'community', 'other'].map(c =>
-                    <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1).replace('-', ' ')}</option>)}
+                    <option key={c} value={c}>{c.toUpperCase()}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-400 mb-2">Base City</label>
-                <select className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-all font-medium appearance-none" 
+                <label className="block text-xs font-bold mb-2 uppercase tracking-widest" style={{ color: '#fca5a5' }}>Base Location</label>
+                <select className="w-full rounded-xl px-4 py-4 text-white focus:outline-none transition-all font-medium appearance-none" 
+                  style={{ background: 'rgba(20,5,5,0.6)', border: '1px solid rgba(239,68,68,0.3)' }}
                   value={ngoForm.city} onChange={(e) => setNgoForm({ ...ngoForm, city: e.target.value })}>
                   {Object.keys(cityCoords).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
-            <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 font-bold text-white shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:-translate-y-1 transition-all mt-4 text-lg">
-              Establish Headquarter
+            <button type="submit" className="w-full py-5 rounded-xl font-black text-white transition-all uppercase tracking-widest mt-4 text-sm"
+              style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 25px rgba(220,38,38,0.4)' }}>
+              Establish Network
             </button>
           </form>
         </div>
@@ -187,248 +190,278 @@ const NGODashboard = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-950 text-slate-100 font-sans pt-16 pb-12 px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[800px] h-96 bg-cyan-900/10 blur-[120px] pointer-events-none"></div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 animate-slide-up">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-2 tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">{ngo?.name}</span> Command
-            </h1>
-            <p className="text-slate-400 text-lg">Oversee active missions, task deployments, and volunteer personnel.</p>
+    <div className="min-h-screen pt-28 pb-12 px-4 lg:px-8 max-w-[1600px] mx-auto font-sans flex flex-col lg:flex-row gap-8" style={{ background: 'transparent' }}>
+      
+      {/* ── LEFT PANEL: Command Module ── */}
+      <div className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
+        
+        {/* Identity Head */}
+        <div className="backdrop-blur-xl rounded-3xl p-8 relative overflow-hidden animate-slide-up" style={{ background: 'rgba(15,5,5,0.6)', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <div className="w-16 h-16 rounded-2xl mb-6 flex items-center justify-center text-3xl shadow-lg" style={{ background: 'linear-gradient(135deg,#ef4444,#991b1b)', color: '#fff' }}>
+            <FiTarget />
           </div>
-          <button onClick={() => setShowCreateTask(!showCreateTask)} className="px-6 py-3 rounded-xl bg-cyan-600 text-white font-bold flex items-center gap-2 hover:bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all">
-            {showCreateTask ? <><FiX /> Close Planner</> : <><FiPlus /> New Mission Task</>}
-          </button>
-        </header>
+          <h1 className="text-2xl font-black tracking-tight text-white mb-2 leading-tight uppercase">
+            {ngo?.name}
+          </h1>
+          <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#fca5a5' }}>OPS COMMAND CENTER</p>
+          
+          <div className="mt-8 pt-6 border-t border-red-900/30 flex justify-between tracking-wide text-xs font-bold text-slate-400 uppercase">
+            <span className="flex items-center gap-2"><FiMapPin className="text-red-500 text-lg"/> {ngo?.location?.city}</span>
+            <span className="flex items-center gap-2"><FiGrid className="text-red-500 text-lg"/> {ngo?.category}</span>
+          </div>
+        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* Action Trigger */}
+        <button 
+          onClick={() => setShowCreateTask(!showCreateTask)} 
+          className="w-full py-5 rounded-3xl font-black text-white hover:-translate-y-1 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm shadow-2xl animate-fade-in"
+          style={{ background: showCreateTask ? 'rgba(239,68,68,0.1)' : 'linear-gradient(135deg,#dc2626,#991b1b)', border: showCreateTask ? '1px solid rgba(239,68,68,0.5)' : 'none', boxShadow: showCreateTask ? 'none' : '0 10px 30px rgba(220,38,38,0.4)', color: showCreateTask ? '#fca5a5' : '#fff' }}
+        >
+          {showCreateTask ? <><FiX className="text-xl"/> ABORT PLANNING</> : <><FiPlus className="text-xl"/> ISSUE NEW DIRECTIVE</>}
+        </button>
+
+        {/* Tactical Stats Grid */}
+        <div className="grid grid-cols-2 gap-4">
           {[
-            { icon: <FiTarget />, val: stats?.totalTasks || 0, label: 'Total Operations', color: 'indigo' },
-            { icon: <FiTrendingUp />, val: stats?.openTasks || 0, label: 'Active Missions', color: 'cyan' },
-            { icon: <FiCheck />, val: stats?.completedTasks || 0, label: 'Successful', color: 'emerald' },
-            { icon: <FiUsers />, val: stats?.memberCount || 0, label: 'Personnel deployed', color: 'amber' }
+            { icon: <FiActivity />, val: stats?.openTasks || 0, label: 'Active', color: '#10b981' }, // emerald
+            { icon: <FiUsers />, val: stats?.memberCount || 0, label: 'Personnel', color: '#3b82f6' }, // blue
+            { icon: <FiCheck />, val: stats?.completedTasks || 0, label: 'Secured', color: '#8b5cf6' }, // violet
+            { icon: <FiTarget />, val: stats?.totalTasks || 0, label: 'Total Ops', color: '#ef4444' } // red
           ].map((stat, i) => (
-            <div key={i} className="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-500/30 hover:shadow-2xl transition-all animate-slide-up relative overflow-hidden" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}-500/10 rounded-full blur-[20px] -mr-10 -mt-10`}></div>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4 bg-${stat.color}-500/20 text-${stat.color}-400 relative z-10`}>
-                {stat.icon}
-              </div>
-              <div className="relative z-10">
-                <div className="text-4xl font-black text-white mb-1">{stat.val}</div>
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{stat.label}</div>
+            <div key={i} className="backdrop-blur-xl rounded-2xl p-5 animate-slide-up hover:scale-[1.02] transition-transform" 
+              style={{ background: 'rgba(10,5,5,0.6)', border: `1px solid ${stat.color}30`, borderTop: `2px solid ${stat.color}` }}>
+              <div className="text-3xl font-black mb-1 text-white">{stat.val}</div>
+              <div className="flex justify-between items-center mt-2">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{stat.label}</div>
+                <div style={{ color: stat.color }} className="text-sm">{stat.icon}</div>
               </div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Create Task Form Details */}
+      {/* ── RIGHT PANEL: Active Theatre ── */}
+      <div className="flex-1 flex flex-col min-h-0 relative">
+        
+        {/* Create Task Form Overlay (injects above grid if open) */}
         {showCreateTask && (
-          <div className="bg-slate-900/80 backdrop-blur-2xl border border-cyan-500/30 rounded-3xl p-8 mb-12 animate-slide-up shadow-[0_0_40px_rgba(6,182,212,0.15)] relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-indigo-500"></div>
-            <h3 className="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-              <span className="p-2 bg-cyan-500/20 rounded-lg text-cyan-400"><FiTarget /></span> Configure New Protocol
+          <div className="mb-8 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl animate-slide-up border relative overflow-hidden" 
+               style={{ background: 'rgba(15,5,5,0.85)', borderColor: 'rgba(239,68,68,0.4)' }}>
+            <div className="absolute top-0 left-0 w-full h-1" style={{ background: 'linear-gradient(90deg, #dc2626, #10b981)' }}></div>
+            
+            <h3 className="text-xl font-black mb-6 text-white uppercase tracking-widest flex items-center gap-3">
+              <span className="p-2 rounded-lg bg-red-500/20 text-red-500"><FiTarget /></span> Parameter Setup
             </h3>
             
             <form onSubmit={handleCreateTask} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide">Operation Title</label>
-                  <input className="w-full bg-slate-950/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-medium" 
-                    value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} required placeholder="E.g. Flood relief medical camp..." />
+                  <label className="block text-[11px] font-black mb-2 uppercase tracking-widest text-red-400">Operation Title</label>
+                  <input className="w-full bg-black/40 border border-red-900/50 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-red-500 font-medium" 
+                    value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} required placeholder="Supply drop execution..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide flex justify-between items-center">
-                    <span>Threat Level / Urgency</span>
-                    <button type="button" onClick={handleAutoDetectUrgency} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-500/20 transition-all">
+                  <label className="block text-[11px] font-black mb-2 uppercase tracking-widest text-red-400 flex justify-between items-center">
+                    <span>Threat Level</span>
+                    <button type="button" onClick={handleAutoDetectUrgency} className="text-[10px] text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
                       <FiCpu /> Auto-Detect
                     </button>
                   </label>
-                  <select className="w-full bg-slate-950/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-all font-medium appearance-none" 
+                  <select className="w-full bg-black/40 border border-red-900/50 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-red-500 font-medium appearance-none" 
                     value={taskForm.urgency} onChange={(e) => setTaskForm({ ...taskForm, urgency: e.target.value })}>
-                    {['low', 'medium', 'high', 'critical'].map(u =>
-                      <option key={u} value={u}>{u.toUpperCase()}</option>)}
+                    {['low', 'medium', 'high', 'critical'].map(u => <option key={u} value={u}>{u.toUpperCase()}</option>)}
                   </select>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide">Tactical Objective (Description)</label>
-                <textarea className="w-full bg-slate-950/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-medium resize-none" 
-                  rows={2} value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} required placeholder="Provide clear instructions and expected outcomes..." />
+                <label className="block text-[11px] font-black mb-2 uppercase tracking-widest text-red-400">Tactical Objective</label>
+                <textarea className="w-full bg-black/40 border border-red-900/50 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-red-500 font-medium resize-none" 
+                  rows={2} value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} required placeholder="Input parameters..." />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide">Deployment Zone (City)</label>
-                  <select className="w-full bg-slate-950/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-all font-medium appearance-none" 
+                  <label className="block text-[11px] font-black mb-2 uppercase tracking-widest text-red-400">Drop Zone</label>
+                  <select className="w-full bg-black/40 border border-red-900/50 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-red-500 font-medium appearance-none" 
                     value={taskForm.city} onChange={(e) => setTaskForm({ ...taskForm, city: e.target.value })}>
                     {Object.keys(cityCoords).map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide">Absolute Deadline</label>
-                  <input type="date" className="w-full bg-slate-950/50 border border-slate-700 text-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 transition-all font-medium" 
+                  <label className="block text-[11px] font-black mb-2 uppercase tracking-widest text-red-400">T-Zero (Deadline)</label>
+                  <input type="date" className="w-full bg-black/40 border border-red-900/50 rounded-xl px-4 py-4 text-slate-300 focus:outline-none focus:border-red-500 font-medium" 
                     value={taskForm.deadline} onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })} />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-slate-400 mb-3 uppercase tracking-wide">Required Personnel Skills</label>
-                <div className="flex flex-wrap gap-3">
+                <label className="block text-[11px] font-black mb-3 uppercase tracking-widest text-red-400">Required Skill Vectors</label>
+                <div className="flex flex-wrap gap-2">
                   {SKILL_OPTIONS.map(skill => {
                     const isSelected = taskForm.requiredSkills.includes(skill);
                     return (
                       <button key={skill} type="button"
-                        onClick={() => setTaskForm(prev => ({
-                          ...prev, requiredSkills: isSelected ? prev.requiredSkills.filter(s => s !== skill) : [...prev.requiredSkills, skill]
-                        }))}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${isSelected ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300'}`}>
-                        {isSelected && '✓ '} {skill.toUpperCase()}
+                        onClick={() => setTaskForm(prev => ({ ...prev, requiredSkills: isSelected ? prev.requiredSkills.filter(s => s !== skill) : [...prev.requiredSkills, skill] }))}
+                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${isSelected ? 'bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-black/40 border-red-900/50 text-slate-500 hover:text-red-300'}`}>
+                        {skill}
                       </button>
                     )
                   })}
                 </div>
               </div>
               
-              <div className="pt-4 flex gap-4 border-t border-white/5">
-                <button type="submit" className="px-8 py-3 rounded-xl bg-cyan-600 text-white font-bold hover:bg-cyan-500 shadow-lg shadow-cyan-900/50 transition-all">
-                  Initialize Mission
-                </button>
-                <button type="button" onClick={() => setShowCreateTask(false)} className="px-8 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-all">
-                  Abort
+              <div className="pt-4 mt-8 flex justify-end">
+                <button type="submit" className="px-10 py-4 rounded-xl font-black text-white hover:-translate-y-1 transition-all uppercase tracking-widest text-[11px]"
+                  style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 20px rgba(220,38,38,0.4)' }}>
+                  Deploy Data
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* AI Matching Intelligence */}
+        {/* Neural Match Overlay */}
         {matches && (
-          <div className="bg-slate-900/90 backdrop-blur-2xl border-2 border-emerald-500/50 rounded-3xl p-8 mb-12 animate-slide-up shadow-[0_0_50px_rgba(16,185,129,0.15)] relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]"></div>
+          <div className="absolute inset-0 z-50 backdrop-blur-2xl rounded-3xl p-8 flex flex-col border shadow-2xl animate-fade-in overflow-y-auto"
+               style={{ background: 'rgba(5,20,15,0.92)', borderColor: 'rgba(16,185,129,0.5)', boxShadow: '0 0 80px rgba(16,185,129,0.2)' }}>
             
-            <div className="flex justify-between items-start mb-6 relative z-10">
+            <div className="flex justify-between items-start mb-10">
               <div>
-                <h3 className="text-2xl font-black text-white flex items-center gap-3">
-                  <FiZap className="text-emerald-400 animate-pulse" /> Neural Matching Results
+                <h3 className="text-3xl font-black text-white uppercase tracking-tighter flex items-center gap-4">
+                  <span className="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400"><FiZap className="animate-pulse" /></span>
+                  Neural Mapping Complete
                 </h3>
-                <p className="text-emerald-400/80 font-medium mt-1">Analyzing vector parameters for task: "{matches.task}"</p>
+                <p className="text-emerald-500 font-bold tracking-widest text-xs mt-3 uppercase border-l-2 border-emerald-500 pl-3">Target: "{matches.task}"</p>
               </div>
-              <button onClick={() => { setMatches(null); setMatchingTaskId(null); }} className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-all">
-                <FiX className="text-xl" />
+              <button onClick={() => { setMatches(null); setMatchingTaskId(null); }} className="w-12 h-12 rounded-xl flex items-center justify-center bg-black/40 text-emerald-500/50 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition-all text-2xl">
+                <FiX />
               </button>
             </div>
             
-            <div className="grid gap-4 relative z-10">
+            <div className="grid gap-4">
               {matches.matches.map((m, i) => (
-                <div key={m.volunteerId} className={`flex flex-col md:flex-row justify-between md:items-center gap-6 p-6 rounded-2xl border ${i === 0 ? 'bg-emerald-500/10 border-emerald-500/40 relative overflow-hidden' : 'bg-slate-950/50 border-slate-800'}`}>
-                  {i === 0 && <div className="absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-xs font-bold text-white rounded-bl-xl">TOP MATCH</div>}
+                <div key={m.volunteerId} className={`relative flex flex-col lg:flex-row justify-between lg:items-center gap-6 p-6 rounded-2xl border transition-all ${i === 0 ? 'bg-emerald-500/10 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.15)]' : 'bg-black/40 border-emerald-900/30 hover:border-emerald-500/50'}`}>
+                  {i === 0 && <div className="absolute top-0 right-8 px-4 py-1 bg-emerald-500 text-[10px] font-black text-slate-950 uppercase tracking-widest rounded-b-lg">99.9% OPTIMAL</div>}
                   
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${i === 0 ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>#{i + 1}</span>
-                      <span className="text-xl font-bold text-white">{m.name}</span>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${i === 0 ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.6)]' : 'bg-emerald-900/40 text-emerald-500'}`}>
+                        {i + 1}
+                      </div>
+                      <span className="text-2xl font-black text-white tracking-tight">{m.name}</span>
                     </div>
                     
-                    <div className="flex items-center gap-4 text-sm text-slate-400 mb-3 ml-11">
-                      <span className="flex items-center gap-1"><FiMapPin className="text-emerald-500" /> {m.location?.city}</span>
-                      <span className="flex items-center gap-1"><FiClock className="text-indigo-400" /> {m.availability}</span>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-slate-400 mb-4 ml-14 uppercase tracking-widest">
+                      <span className="flex items-center gap-2"><FiMapPin className="text-emerald-500 text-lg" /> {m.location?.city}</span>
+                      <span className="flex items-center gap-2"><FiClock className="text-blue-500 text-lg" /> {m.availability}</span>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 ml-11">
-                      {m.skills?.map(s => <span key={s} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded-md text-xs font-bold text-slate-300 uppercase">{s}</span>)}
+                    <div className="flex flex-wrap gap-2 ml-14">
+                      {m.skills?.map(s => <span key={s} className="px-3 py-1.5 bg-emerald-950/50 border border-emerald-800/50 rounded text-[10px] font-black text-emerald-400 uppercase tracking-widest">{s}</span>)}
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-6 md:border-l md:border-white/10 md:pl-6">
-                    <div className="text-right">
-                      <div className="text-4xl font-black text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]">{(m.score * 100).toFixed(0)}%</div>
-                      <div className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                        S:{(m.breakdown.skill*100).toFixed(0)} L:{(m.breakdown.location*100).toFixed(0)} A:{(m.breakdown.availability*100).toFixed(0)}
+                  <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between gap-4 lg:border-l lg:border-emerald-500/20 lg:pl-8">
+                    <div className="text-left lg:text-right">
+                      <div className="text-4xl lg:text-5xl font-black text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                        {(m.score * 100).toFixed(0)}<span className="text-xl text-emerald-500/50">%</span>
+                      </div>
+                      <div className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] mt-1 space-x-2">
+                        <span>S:{(m.breakdown.skill*100).toFixed(0)}</span> <span>L:{(m.breakdown.location*100).toFixed(0)}</span> <span>A:{(m.breakdown.availability*100).toFixed(0)}</span>
                       </div>
                     </div>
-                    <button onClick={() => handleAssign(matchingTaskId, m.volunteerId)} className="h-14 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all uppercase tracking-wide text-sm flex items-center gap-2">
-                       Deploy <FiCheck />
+                    <button onClick={() => handleAssign(matchingTaskId, m.volunteerId)} 
+                      className="px-8 py-4 rounded-xl font-black text-slate-950 bg-emerald-500 hover:bg-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:-translate-y-1 transition-all uppercase tracking-widest text-[11px] flex items-center gap-2">
+                      Authorize <FiCheck className="text-lg"/>
                     </button>
                   </div>
                 </div>
               ))}
               
               {matches.matches.length === 0 && (
-                <div className="p-8 text-center text-slate-400 border border-dashed border-slate-700 rounded-2xl">
-                  No suitable personnel found in proximity with required vector parameters.
+                <div className="p-12 text-center border-2 border-dashed border-red-900/50 rounded-2xl bg-red-950/20">
+                  <FiAlertTriangle className="text-5xl text-red-500 mx-auto mb-4 opacity-50" />
+                  <div className="text-white font-bold tracking-wide">NO PERSONNEL AVAILABLE</div>
+                  <div className="text-red-400 text-sm mt-2">Vector analysis returned zero viable operatives. Adjust mission parameters.</div>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Task Dashboard Grid */}
-        <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-2xl font-bold text-white">Active Logs</h2>
-          <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent"></div>
+        {/* Task Grid Header */}
+        <div className="flex items-end justify-between mb-6 pb-4 border-b border-red-900/20">
+          <h2 className="text-2xl font-black text-white tracking-tight uppercase">Live Feed</h2>
+          <span className="text-xs font-bold text-red-500 uppercase tracking-widest flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> {tasks.length} Records</span>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Task Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 auto-rows-max pb-10">
           {tasks.map((task, i) => {
-            const uConfig = urgencyConfig[task.urgency] || urgencyConfig.low;
+            const u = urgencyConfig[task.urgency] || urgencyConfig.low;
             return (
-              <div key={task._id} className="bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-col h-full hover:border-cyan-500/30 transition-colors animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
-                <div className="flex justify-between items-start mb-4 gap-4">
-                  <h4 className="font-bold text-lg text-white leading-tight flex-1">{task.title}</h4>
-                  <span className={`px-2 py-1 rounded border text-[0.65rem] font-black uppercase tracking-wider ${uConfig.bg} ${uConfig.text} ${uConfig.border}`}>
-                    {task.urgency}
-                  </span>
+              <div key={task._id} className="backdrop-blur-xl rounded-2xl p-6 flex flex-col transition-all animate-slide-up group" 
+                   style={{ animationDelay: `${i * 0.05}s`, background: 'rgba(10,5,5,0.6)', border: `1px solid rgba(239,68,68,0.15)`,
+                            boxShadow: task.urgency === 'critical' ? '0 0 20px rgba(239,68,68,0.1) inset' : 'none' }}>
+                
+                <div className="flex justify-between items-start gap-4 mb-5">
+                  <h4 className="font-black text-lg text-white leading-tight flex-1 tracking-tight group-hover:text-red-200 transition-colors">{task.title}</h4>
+                  <div className="flex items-center gap-2">
+                    {u.pulse && <span className="absolute top-8 right-10 w-2 h-2 rounded-full bg-red-500 animate-ping"></span>}
+                    <span className="px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border"
+                          style={{ background: u.bg, color: u.color, borderColor: `${u.color}40`, boxShadow: u.shadow || 'none' }}>
+                      {task.urgency}
+                    </span>
+                  </div>
                 </div>
                 
-                <p className="text-slate-400 text-sm mb-6 flex-1 line-clamp-3 leading-relaxed">
+                <p className="text-slate-400 text-xs mb-6 flex-1 line-clamp-3 leading-relaxed">
                   {task.description}
                 </p>
                 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {task.requiredSkills?.map(s => (
-                    <span key={s} className="px-2 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded-md text-xs font-bold uppercase">
+                    <span key={s} className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest"
+                          style={{ background: 'rgba(239,68,68,0.05)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.2)' }}>
                       {s}
                     </span>
                   ))}
                 </div>
                 
-                <div className="border-t border-white/5 pt-4 mt-auto">
-                  <div className="flex justify-between items-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${task.status === 'open' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : task.status === 'assigned' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                      {task.status}
-                    </span>
-                    
-                    {task.status === 'open' && (
-                      <button onClick={() => handleMatch(task._id)} className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-lg text-xs font-bold hover:-translate-y-0.5 shadow-lg shadow-cyan-900/50 transition-all flex items-center gap-2">
-                        <FiZap /> Run AI Match
-                      </button>
-                    )}
-                    
-                    {task.assignedVolunteer && (
-                      <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                        <span className="text-xs font-bold text-slate-300">{task.assignedVolunteer.name || 'Assigned'}</span>
-                      </div>
-                    )}
-                  </div>
+                <div className="border-t border-red-900/30 pt-5 mt-auto flex justify-between items-center bg-[rgba(0,0,0,0.2)] -mx-6 -mb-6 px-6 pb-6 rounded-b-2xl">
+                  {task.status === 'open' ? (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Awaiting Assignment</span>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center text-slate-950 font-black"><FiCheck/></div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">{task.assignedVolunteer?.name.split(' ')[0] || 'Assigned'}</span>
+                    </div>
+                  )}
+                  
+                  {task.status === 'open' && (
+                    <button onClick={() => handleMatch(task._id)} 
+                      className="px-5 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-900 hover:bg-emerald-500 hover:text-slate-950 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex items-center gap-2">
+                      <FiZap className="text-sm"/> Neural Match
+                    </button>
+                  )}
                 </div>
               </div>
             )
           })}
           
           {tasks.length === 0 && (
-             <div className="col-span-1 lg:col-span-2 xl:col-span-3 bg-slate-900/30 border border-dashed border-slate-700 rounded-3xl p-16 text-center">
-               <FiTarget className="text-4xl text-slate-600 mx-auto mb-4" />
-               <h3 className="text-xl font-bold text-slate-300 mb-2">No Active Missions</h3>
-               <p className="text-slate-500">Initialize a new mission task to begin operation coordination.</p>
+             <div className="col-span-1 xl:col-span-2 backdrop-blur-xl border border-dashed border-red-900/30 rounded-3xl p-16 text-center" style={{ background: 'rgba(10,5,5,0.4)' }}>
+               <div className="w-20 h-20 mx-auto bg-red-950/50 rounded-2xl flex items-center justify-center border border-red-900/50 mb-6 text-red-900">
+                 <FiTarget className="text-4xl" />
+               </div>
+               <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tight">Zero Active Parameters</h3>
+               <p className="text-slate-500 text-sm font-medium">Clearance required to initialize new operational targets.</p>
              </div>
           )}
         </div>
       </div>
+
     </div>
   );
 };
