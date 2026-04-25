@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getTasks, createTask, createNGO, getNGOs, matchTask, assignTask, getNGODashboard, predictPriority } from '../services/api';
-import { FiPlus, FiUsers, FiTarget, FiTrendingUp, FiCheck, FiZap, FiMapPin, FiClock, FiX, FiCpu, FiGrid, FiActivity } from 'react-icons/fi';
+import { getTasks, createTask, createNGO, getNGOs, matchTask, assignTask, getNGODashboard, predictPriority, getVolunteers } from '../services/api';
+import { FiPlus, FiUsers, FiTarget, FiTrendingUp, FiCheck, FiZap, FiMapPin, FiClock, FiX, FiCpu, FiGrid, FiActivity, FiUploadCloud, FiMessageSquare, FiPieChart, FiList, FiMap } from 'react-icons/fi';
+import ScanUploadModal from '../components/ScanUploadModal';
+import TaskDiscussionModal from '../components/TaskDiscussionModal';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const SKILL_OPTIONS = ['medical', 'teaching', 'logistics', 'cooking', 'counseling', 'driving', 'construction', 'tech', 'translation', 'first-aid'];
 
@@ -12,9 +16,13 @@ const NGODashboard = () => {
   const [stats, setStats] = useState(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [showCreateNGO, setShowCreateNGO] = useState(false);
+  const [showScanModal, setShowScanModal] = useState(false);
   const [matches, setMatches] = useState(null);
   const [matchingTaskId, setMatchingTaskId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('map'); // 'tasks', 'summary', 'volunteers', 'map'
+  const [volunteers, setVolunteers] = useState([]);
+  const [discussTask, setDiscussTask] = useState(null);
 
   const [taskForm, setTaskForm] = useState({
     title: '', description: '', requiredSkills: [],
@@ -32,12 +40,14 @@ const NGODashboard = () => {
       const userNgo = ngosRes.data.find(n => n.adminUser?._id === user?._id || n.adminUser === user?._id);
       if (userNgo) {
         setNgo(userNgo);
-        const [tasksRes, dashRes] = await Promise.all([
+        const [tasksRes, dashRes, volRes] = await Promise.all([
           getTasks(),
-          getNGODashboard(userNgo._id)
+          getNGODashboard(userNgo._id),
+          getVolunteers()
         ]);
         setTasks(tasksRes.data.filter(t => t.ngoId?._id === userNgo._id || t.ngoId === userNgo._id));
         setStats(dashRes.data);
+        setVolunteers(volRes.data);
       } else {
         setShowCreateNGO(true);
       }
@@ -191,6 +201,8 @@ const NGODashboard = () => {
 
   return (
     <div className="min-h-screen pt-28 pb-12 px-4 lg:px-8 max-w-[1600px] mx-auto font-sans flex flex-col lg:flex-row gap-8" style={{ background: 'transparent' }}>
+      {showScanModal && <ScanUploadModal onClose={() => setShowScanModal(false)} onPublished={() => { setShowScanModal(false); loadData(); }} />}
+      {discussTask && <TaskDiscussionModal task={discussTask} user={user} onClose={() => setDiscussTask(null)} onMessageAdded={loadData} />}
       
       {/* ── LEFT PANEL: Command Module ── */}
       <div className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6">
@@ -211,13 +223,22 @@ const NGODashboard = () => {
           </div>
         </div>
 
-        {/* Action Trigger */}
+        {/* Action Triggers */}
         <button 
           onClick={() => setShowCreateTask(!showCreateTask)} 
           className="w-full py-5 rounded-3xl font-black text-white hover:-translate-y-1 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm shadow-2xl animate-fade-in"
           style={{ background: showCreateTask ? 'rgba(239,68,68,0.1)' : 'linear-gradient(135deg,#dc2626,#991b1b)', border: showCreateTask ? '1px solid rgba(239,68,68,0.5)' : 'none', boxShadow: showCreateTask ? 'none' : '0 10px 30px rgba(220,38,38,0.4)', color: showCreateTask ? '#fca5a5' : '#fff' }}
         >
           {showCreateTask ? <><FiX className="text-xl"/> ABORT PLANNING</> : <><FiPlus className="text-xl"/> ISSUE NEW DIRECTIVE</>}
+        </button>
+
+        {/* AI Scan Button */}
+        <button
+          onClick={() => setShowScanModal(true)}
+          className="w-full py-4 rounded-3xl font-black hover:-translate-y-1 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm animate-fade-in"
+          style={{ background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.35)', color: '#a78bfa', boxShadow: '0 0 20px rgba(124,58,237,0.1)' }}
+        >
+          <FiUploadCloud className="text-xl" /> Scan Field Report
         </button>
 
         {/* Tactical Stats Grid */}
@@ -390,13 +411,189 @@ const NGODashboard = () => {
           </div>
         )}
 
-        {/* Task Grid Header */}
-        <div className="flex items-end justify-between mb-6 pb-4 border-b border-red-900/20">
-          <h2 className="text-2xl font-black text-white tracking-tight uppercase">Live Feed</h2>
-          <span className="text-xs font-bold text-red-500 uppercase tracking-widest flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> {tasks.length} Records</span>
+        {/* Tab Switcher */}
+        <div className="flex gap-4 mb-6 pb-4 border-b border-red-900/20 overflow-x-auto">
+          {[
+            { id: 'tasks', label: 'Live Feed', icon: <FiList /> },
+            { id: 'map', label: 'Strategic Map', icon: <FiMap /> },
+            { id: 'summary', label: 'Reports Summary', icon: <FiPieChart /> },
+            { id: 'volunteers', label: 'Personnel Directory', icon: <FiUsers /> }
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-black/20 text-slate-500 hover:text-red-300'}`}>
+              {tab.icon} {tab.label}
+            </button>
+          ))}
         </div>
-        
+
+        {activeTab === 'summary' && (
+          <div className="animate-fade-in space-y-6">
+            <h2 className="text-2xl font-black text-white tracking-tight uppercase">Operational Summary</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="backdrop-blur-xl rounded-2xl p-6 border border-red-900/30 bg-black/40 text-center">
+                <div className="text-4xl font-black text-white mb-2">{tasks.length}</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Total Reports Submitted</div>
+              </div>
+              <div className="backdrop-blur-xl rounded-2xl p-6 border border-emerald-900/30 bg-black/40 text-center">
+                <div className="text-4xl font-black text-emerald-400 mb-2">{tasks.filter(t => t.status === 'completed').length}</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Resolved</div>
+              </div>
+              <div className="backdrop-blur-xl rounded-2xl p-6 border border-amber-900/30 bg-black/40 text-center">
+                <div className="text-4xl font-black text-amber-400 mb-2">{tasks.filter(t => t.status === 'open').length}</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Awaiting Action</div>
+              </div>
+            </div>
+            <div className="backdrop-blur-xl rounded-2xl p-6 border border-red-900/30 bg-black/40">
+              <h3 className="text-lg font-black text-white uppercase tracking-tight mb-4">Urgency Breakdown</h3>
+              <div className="space-y-4">
+                {['critical', 'high', 'medium', 'low'].map(urg => {
+                  const count = tasks.filter(t => t.urgency === urg).length;
+                  const pct = tasks.length ? (count / tasks.length) * 100 : 0;
+                  const u = urgencyConfig[urg] || urgencyConfig.low;
+                  return (
+                    <div key={urg}>
+                      <div className="flex justify-between text-xs font-bold uppercase tracking-widest mb-1">
+                        <span style={{ color: u.color }}>{urg}</span>
+                        <span className="text-slate-400">{count} tasks</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: u.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* AI STRATEGIC ANALYSIS MOCK */}
+            <div className="backdrop-blur-xl rounded-3xl p-8 border border-indigo-900/40 relative overflow-hidden mt-8" style={{ background: 'linear-gradient(135deg, rgba(30,27,75,0.8), rgba(15,23,42,0.9))' }}>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]"></div>
+              <h3 className="text-xl font-black text-indigo-300 uppercase tracking-widest mb-6 flex items-center gap-3">
+                <FiCpu className="text-2xl text-indigo-400" /> AI Strategic Analysis
+              </h3>
+              
+              <div className="space-y-6 relative z-10">
+                <div className="bg-black/20 p-5 rounded-2xl border border-white/5">
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Situation Overview</h4>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Analysis of recent reports indicates a high concentration of **medical supply shortages** in the Pune and Mumbai sectors. 40% of all critical tasks are clustered in these regions, primarily requiring first-aid and logistics personnel. The situation is escalating at a moderate pace.
+                  </p>
+                </div>
+                
+                <div className="bg-black/20 p-5 rounded-2xl border border-white/5">
+                  <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Recommended Actions</h4>
+                  <ul className="list-disc pl-5 text-slate-300 text-sm leading-relaxed space-y-1">
+                    <li>Redeploy 5 available logistics volunteers from Nagpur to Pune immediately.</li>
+                    <li>Initiate a bulk procurement of emergency medical kits.</li>
+                    <li>Escalate the priority of pending transportation tasks to clear supply bottlenecks.</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-black/20 p-5 rounded-2xl border border-white/5">
+                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">Future Preparedness</h4>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Based on historical data and current trends, expect a 25% surge in demand for **construction and structural repair** skills in the next 14 days as immediate medical crises stabilize. Begin recruiting or re-skilling volunteers for infrastructure rebuilding efforts.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        )}
+
+        {activeTab === 'map' && (
+          <div className="animate-fade-in h-[600px] rounded-3xl overflow-hidden border border-red-900/30 relative shadow-[0_0_40px_rgba(239,68,68,0.1)]">
+            {/* Overlay Title */}
+            <div className="absolute top-6 left-6 z-[400] backdrop-blur-xl bg-black/60 border border-white/10 px-6 py-3 rounded-2xl pointer-events-none">
+              <h3 className="text-white font-black uppercase tracking-widest flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Tactical Heatmap
+              </h3>
+            </div>
+            <MapContainer 
+              center={[20.5937, 78.9629]} // Center of India
+              zoom={5} 
+              style={{ height: '100%', width: '100%', background: '#0f172a' }}
+              zoomControl={false}
+            >
+              {/* Using a dark map tile layer suitable for dashboard */}
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              />
+              
+              {tasks.map(t => {
+                if (!t.location || !t.location.lat) return null;
+                const u = urgencyConfig[t.urgency] || urgencyConfig.low;
+                
+                // Determine size and opacity based on urgency
+                let radius = 10;
+                let fillOpacity = 0.5;
+                if (t.urgency === 'critical') { radius = 25; fillOpacity = 0.8; }
+                else if (t.urgency === 'high') { radius = 18; fillOpacity = 0.6; }
+                else if (t.urgency === 'medium') { radius = 14; fillOpacity = 0.5; }
+
+                return (
+                  <CircleMarker
+                    key={t._id}
+                    center={[t.location.lat, t.location.lng]}
+                    radius={radius}
+                    pathOptions={{ color: u.color, fillColor: u.color, fillOpacity, weight: 2 }}
+                  >
+                    <Popup className="custom-popup">
+                      <div className="p-1 font-sans">
+                        <h4 className="font-bold text-slate-900 mb-1">{t.title}</h4>
+                        <p className="text-xs text-slate-600 mb-2">{t.location?.city}</p>
+                        <span className="px-2 py-1 text-[10px] font-black uppercase rounded text-white" style={{ background: u.color }}>
+                          {t.urgency}
+                        </span>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
+            </MapContainer>
+          </div>
+        )}
+
+        {activeTab === 'volunteers' && (
+          <div className="animate-fade-in">
+            <h2 className="text-2xl font-black text-white tracking-tight uppercase mb-6">Personnel Directory</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {volunteers.map(vol => {
+                const isBusy = vol.assignedTasks?.some(t => {
+                  const assignedTask = tasks.find(tsk => tsk._id === t || tsk._id === t._id);
+                  return assignedTask && assignedTask.status !== 'completed';
+                });
+                return (
+                  <div key={vol._id} className="backdrop-blur-xl rounded-2xl p-6 border border-red-900/20 bg-black/40 flex flex-col items-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-2xl mb-4 font-black text-slate-400">
+                      {vol.name.charAt(0)}
+                    </div>
+                    <h4 className="font-black text-white text-lg">{vol.name}</h4>
+                    <p className="text-xs text-slate-400 mt-1">{vol.location?.city || 'No location'}</p>
+                    <div className="mt-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border"
+                         style={{ 
+                           background: isBusy ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', 
+                           color: isBusy ? '#fcd34d' : '#34d399', 
+                           borderColor: isBusy ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)' 
+                         }}>
+                      {isBusy ? 'Busy (Assigned)' : 'Available'}
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-1 justify-center">
+                      {vol.skills?.slice(0, 3).map(s => (
+                        <span key={s} className="px-2 py-1 rounded bg-red-900/20 text-red-300 text-[9px] uppercase font-black">{s}</span>
+                      ))}
+                      {vol.skills?.length > 3 && <span className="px-2 py-1 rounded bg-red-900/20 text-red-300 text-[9px] uppercase font-black">+{vol.skills.length - 3}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Task Grid */}
+        {activeTab === 'tasks' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 auto-rows-max pb-10">
           {tasks.map((task, i) => {
             const u = urgencyConfig[task.urgency] || urgencyConfig.low;
@@ -433,9 +630,14 @@ const NGODashboard = () => {
                   {task.status === 'open' ? (
                     <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Awaiting Assignment</span>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center text-slate-950 font-black"><FiCheck/></div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">{task.assignedVolunteer?.name.split(' ')[0] || 'Assigned'}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center text-slate-950 font-black"><FiCheck/></div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">{task.assignedVolunteer?.name?.split(' ')[0] || 'Assigned'}</span>
+                      </div>
+                      <button onClick={() => setDiscussTask(task)} className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-all" title="Discuss Task">
+                        <FiMessageSquare />
+                      </button>
                     </div>
                   )}
                   
@@ -460,6 +662,7 @@ const NGODashboard = () => {
              </div>
           )}
         </div>
+        )}
       </div>
 
     </div>

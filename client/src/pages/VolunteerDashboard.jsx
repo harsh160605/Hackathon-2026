@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, getNotifications } from '../services/api';
-import { FiClipboard, FiCheckCircle, FiClock, FiStar, FiMapPin, FiAlertTriangle, FiBell } from 'react-icons/fi';
+import { FiClipboard, FiCheckCircle, FiClock, FiStar, FiMapPin, FiAlertTriangle, FiBell, FiMessageSquare } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import TaskDiscussionModal from '../components/TaskDiscussionModal';
 
 const VolunteerDashboard = () => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ const VolunteerDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [discussTask, setDiscussTask] = useState(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -53,6 +55,7 @@ const VolunteerDashboard = () => {
 
   return (
     <div className="min-h-screen font-sans pt-24 pb-12 px-6 lg:px-8 relative overflow-hidden" style={{ background: 'transparent', color: '#e2fce9' }}>
+      {discussTask && <TaskDiscussionModal task={discussTask} user={user} onClose={() => setDiscussTask(null)} onMessageAdded={loadData} />}
 
       <div className="max-w-7xl mx-auto relative z-10">
         <header className="mb-10 animate-slide-up">
@@ -156,6 +159,11 @@ const VolunteerDashboard = () => {
                         <span className="flex items-center gap-1.5"><FiMapPin className="text-indigo-400"/> {task.location?.city || 'N/A'}</span>
                         <span className="flex items-center gap-1.5"><FiClock className="text-indigo-400"/> {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}</span>
                       </div>
+                      {task.status !== 'open' && (
+                        <button onClick={() => setDiscussTask(task)} className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-all flex items-center gap-2" title="Discuss Task">
+                          <FiMessageSquare /> <span className="text-[10px] font-bold uppercase tracking-wider">Discuss</span>
+                        </button>
+                      )}
                     </div>
                     {task.ngoId?.name && (
                       <div className="mt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">

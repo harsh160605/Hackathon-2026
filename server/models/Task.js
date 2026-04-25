@@ -29,6 +29,14 @@ const taskSchema = new mongoose.Schema({
     enum: ['open', 'assigned', 'in-progress', 'completed', 'cancelled'],
     default: 'open'
   },
+  isDraft: {
+    type: Boolean,
+    default: false
+  },
+  sourceDocument: {
+    type: String,
+    default: null
+  },
   ngoId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'NGO',
@@ -52,6 +60,12 @@ const taskSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  messages: [{
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    senderName: String,
+    text: String,
+    timestamp: { type: Date, default: Date.now }
+  }],
   completedAt: {
     type: Date,
     default: null

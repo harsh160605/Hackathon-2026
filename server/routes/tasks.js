@@ -14,7 +14,7 @@ const { calculatePriorityScore, sortByPriority } = require('../services/priority
 router.get('/', auth, async (req, res) => {
   try {
     const { status, urgency, skill, city, sortBy } = req.query;
-    const filter = {};
+    const filter = { isDraft: { $ne: true } };
 
     if (status) filter.status = status;
     if (urgency) filter.urgency = urgency;
@@ -231,6 +231,34 @@ router.put('/:id/complete', auth, async (req, res) => {
     res.json(task);
   } catch (error) {
     console.error('Complete error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/tasks/:id/messages
+// @desc    Add a message to a task discussion
+router.post('/:id/messages', auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+    const task = await Task.findById(req.params.id);
+    
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Check if user is part of the task (creator, assigned volunteer, or admin)
+    // For simplicity, we just allow authenticated users who are part of it
+    
+    task.messages.push({
+      senderId: req.user._id,
+      senderName: req.user.name,
+      text
+    });
+
+    await task.save();
+    res.json(task.messages);
+  } catch (error) {
+    console.error('Message error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

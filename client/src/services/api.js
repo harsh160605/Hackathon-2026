@@ -29,6 +29,7 @@ export const updateTask = (id, data) => API.put(`/tasks/${id}`, data);
 export const matchTask = (id) => API.post(`/tasks/${id}/match`);
 export const assignTask = (id, volunteerId) => API.post(`/tasks/${id}/assign`, { volunteerId });
 export const completeTask = (id, data) => API.put(`/tasks/${id}/complete`, data);
+export const addTaskMessage = (id, text) => API.post(`/tasks/${id}/messages`, { text });
 
 // Volunteers
 export const getVolunteers = (params) => API.get('/volunteers', { params });
@@ -52,5 +53,13 @@ export const markAllRead = () => API.put('/notifications/read-all');
 // AI Services (Connecting directly to FastAPI backend)
 export const predictPriority = (data) => axios.post('http://localhost:8000/priority', data);
 export const extractSkills = (data) => axios.post('http://localhost:8000/extract-skills', data);
+
+// Scan Report (Document AI)
+export const scanDocument = (formData) => API.post('/scan-report', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const getDrafts = () => API.get('/scan-report/drafts');
+export const publishDraft = (id, data) => API.put(`/scan-report/drafts/${id}/publish`, data);
+export const discardDraft = (id) => API.delete(`/scan-report/drafts/${id}`);
 
 export default API;

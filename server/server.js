@@ -23,6 +23,7 @@ app.use('/api/volunteers', require('./routes/volunteers'));
 app.use('/api/ngos', require('./routes/ngos'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/scan-report', require('./routes/scanReport'));
 
 // Health check
 app.get('/api/health', (req, res) => {
