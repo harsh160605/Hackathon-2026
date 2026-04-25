@@ -1,0 +1,16 @@
+area,city,lat,lng,population,primary_need,secondary_need,severity
+Kothrud,Pune,18.5074,73.8077,250000,healthcare,education,medium
+Dharavi,Mumbai,19.0428,72.8517,1000000,food,healthcare,critical
+Chandni Chowk,Delhi,28.6562,77.2302,500000,logistics,education,high
+Whitefield,Bangalore,12.9698,77.7500,300000,tech,education,medium
+T Nagar,Chennai,13.0418,80.2341,400000,healthcare,counseling,high
+Sitabuldi,Nagpur,21.1466,79.0762,200000,education,food,medium
+Andheri,Mumbai,19.1197,72.8464,600000,healthcare,logistics,high
+Connaught Place,Delhi,28.6315,77.2167,150000,counseling,tech,low
+Koramangala,Bangalore,12.9352,77.6245,200000,education,tech,medium
+Adyar,Chennai,13.0064,80.2568,180000,healthcare,counseling,medium
+Hinjewadi,Pune,18.5912,73.7380,120000,tech,logistics,low
+Bandra,Mumbai,19.0596,72.8295,300000,food,healthcare,high
+Rohini,Delhi,28.7495,77.0565,800000,education,logistics,medium
+Electronic City,Bangalore,12.8458,77.6694,250000,tech,education,low
+Tambaram,Chennai,12.9249,80.1000,350000,healthcare,food,high

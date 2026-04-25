@@ -1,0 +1,21 @@
+name,email,skills,city,lat,lng,availability,rating
+Aarav Sharma,aarav@example.com,"medical,first-aid",Pune,18.5204,73.8567,full-time,4.5
+Priya Patel,priya@example.com,"teaching,counseling",Mumbai,19.076,72.8777,part-time,4.2
+Rohan Gupta,rohan@example.com,"logistics,driving",Delhi,28.7041,77.1025,full-time,3.8
+Sneha Iyer,sneha@example.com,"cooking,logistics",Bangalore,12.9716,77.5946,weekends,4.7
+Vikram Singh,vikram@example.com,"construction,driving",Chennai,13.0827,80.2707,full-time,4.0
+Ananya Desai,ananya@example.com,"medical,teaching",Pune,18.5204,73.8567,part-time,4.3
+Karan Mehta,karan@example.com,"tech,logistics",Mumbai,19.076,72.8777,full-time,3.9
+Divya Reddy,divya@example.com,"counseling,translation",Nagpur,21.1458,79.0882,weekends,4.6
+Arjun Nair,arjun@example.com,"first-aid,medical",Bangalore,12.9716,77.5946,full-time,4.1
+Pooja Joshi,pooja@example.com,"teaching,tech",Pune,18.5204,73.8567,part-time,4.4
+Rahul Verma,rahul@example.com,"driving,logistics",Delhi,28.7041,77.1025,full-time,3.7
+Meera Kapoor,meera@example.com,"cooking,teaching",Mumbai,19.076,72.8777,weekends,4.8
+Aditya Rao,aditya@example.com,"tech,construction",Chennai,13.0827,80.2707,full-time,3.5
+Kavita Mishra,kavita@example.com,"medical,counseling",Nagpur,21.1458,79.0882,part-time,4.2
+Saurabh Tiwari,saurabh@example.com,"logistics,first-aid",Pune,18.5204,73.8567,full-time,4.0
+Nisha Kulkarni,nisha@example.com,"teaching,counseling,translation",Mumbai,19.076,72.8777,part-time,4.5
+Amit Pandey,amit@example.com,"driving,construction",Delhi,28.7041,77.1025,full-time,3.6
+Ritu Chauhan,ritu@example.com,"medical,first-aid,teaching",Bangalore,12.9716,77.5946,full-time,4.9
+Deepak Kumar,deepak@example.com,"logistics,tech",Chennai,13.0827,80.2707,weekends,3.8
+Swati Bhatt,swati@example.com,"cooking,counseling",Nagpur,21.1458,79.0882,part-time,4.3

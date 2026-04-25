@@ -1,0 +1,16 @@
+title,description,required_skills,city,lat,lng,urgency,status,deadline
+Medical Camp Setup,"Organize a free health checkup camp in rural area","medical,logistics",Pune,18.5204,73.8567,high,open,2026-04-20
+Food Distribution Drive,"Distribute cooked meals to homeless shelters","cooking,logistics,driving",Mumbai,19.076,72.8777,critical,open,2026-04-15
+Teaching Workshop,"Conduct basic computer literacy classes","teaching,tech",Delhi,28.7041,77.1025,medium,open,2026-04-25
+Flood Relief Coordination,"Coordinate rescue and relief in flood-hit areas","logistics,driving,first-aid",Bangalore,12.9716,77.5946,critical,open,2026-04-14
+Community Health Checkup,"Free health screening for senior citizens","medical,counseling",Chennai,13.0827,80.2707,medium,assigned,2026-04-22
+School Infrastructure Repair,"Repair broken desks and paint classrooms","construction,logistics",Nagpur,21.1458,79.0882,low,open,2026-05-01
+Translation for Migrants,"Translate documents for migrant workers","translation",Pune,18.5204,73.8567,high,open,2026-04-18
+Tech Training for Youth,"Teach web development basics to unemployed youth","tech,teaching",Mumbai,19.076,72.8777,medium,open,2026-04-28
+Emergency First Aid Camp,"Setup first aid tents for marathon event","first-aid,medical",Delhi,28.7041,77.1025,critical,open,2026-04-16
+Community Counseling,"Free counseling sessions for disaster survivors","counseling",Bangalore,12.9716,77.5946,low,completed,2026-04-10
+Disaster Preparedness Workshop,"Train communities on earthquake safety","first-aid,teaching,logistics",Chennai,13.0827,80.2707,high,open,2026-04-19
+Blood Donation Drive,"Organize blood donation camp at community center","medical,logistics",Nagpur,21.1458,79.0882,high,open,2026-04-17
+Elderly Care Visit,"Home visits for elderly living alone","medical,counseling",Pune,18.5204,73.8567,medium,open,2026-04-24
+Highway Accident Response,"Emergency medical support for highway accident","medical,first-aid,driving",Mumbai,19.076,72.8777,critical,open,2026-04-14
+Environmental Cleanup Drive,"Clean up riverbanks and plant trees","logistics",Delhi,28.7041,77.1025,low,open,2026-05-05
