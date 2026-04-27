@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -51,8 +51,9 @@ export const markNotificationRead = (id) => API.put(`/notifications/${id}/read`)
 export const markAllRead = () => API.put('/notifications/read-all');
 
 // AI Services (Connecting directly to FastAPI backend)
-export const predictPriority = (data) => axios.post('http://localhost:8000/priority', data);
-export const extractSkills = (data) => axios.post('http://localhost:8000/extract-skills', data);
+const AI_BASE_URL = import.meta.env.VITE_AI_URL || 'http://localhost:8000';
+export const predictPriority = (data) => axios.post(`${AI_BASE_URL}/priority`, data);
+export const extractSkills = (data) => axios.post(`${AI_BASE_URL}/extract-skills`, data);
 
 // Scan Report (Document AI)
 export const scanDocument = (formData) => API.post('/scan-report', formData, {

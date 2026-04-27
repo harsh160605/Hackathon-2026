@@ -37,7 +37,8 @@ const NGODashboard = () => {
   const loadData = async () => {
     try {
       const ngosRes = await getNGOs();
-      const userNgo = ngosRes.data.find(n => n.adminUser?._id === user?._id || n.adminUser === user?._id);
+      const userId = user?._id || user?.id;
+      const userNgo = ngosRes.data.find(n => n.adminUser?._id === userId || n.adminUser === userId);
       if (userNgo) {
         setNgo(userNgo);
         const [tasksRes, dashRes, volRes] = await Promise.all([

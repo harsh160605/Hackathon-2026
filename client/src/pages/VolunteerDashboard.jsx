@@ -30,7 +30,8 @@ const VolunteerDashboard = () => {
     }
   };
 
-  const myTasks = tasks.filter(t => t.assignedVolunteer?._id === user?._id || t.assignedVolunteer === user?._id);
+  const userId = user?._id || user?.id;
+  const myTasks = tasks.filter(t => t.assignedVolunteer?._id === userId || t.assignedVolunteer === userId);
   const recommendedTasks = tasks.filter(t =>
     t.status === 'open' &&
     t.requiredSkills?.some(s => user?.skills?.includes(s))
